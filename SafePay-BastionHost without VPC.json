@@ -6,11 +6,11 @@
         "BastionHostInstanceType": {
             "Description": "The EC2 instance type",
             "Type": "String",
-            "Default": "t3.micro",
+            "Default": "t2.micro",
             "AllowedValues": [
-                "t3.medium",
-                "t3.micro",
-                "t3.large"         
+                "t2.medium",
+                "t2.micro",
+                "t2.large"         
             ],
             "ConstraintDescription": "must be a valid EC2 instance type."
         },
@@ -136,7 +136,23 @@
                 "ToPort": "22",
                 "CidrIp": "0.0.0.0/0"
             }
-        }
+        },
+        
+        "SGPing" : {
+            "Type" : "AWS::EC2::SecurityGroup",
+            "Properties" : {
+              "GroupDescription" : "SG to allow all ICMP",
+              "VpcId" : {"Ref" : "VPC"},
+              "SecurityGroupIngress" : [ 
+                { 
+                  "IpProtocol" : "icmp", 
+                  "FromPort" : "-1", 
+                  "ToPort" : "-1", 
+                  "CidrIp" : "10.0.0.0/24"
+                }
+              ]
+            }
+          }
        
     }
 }
