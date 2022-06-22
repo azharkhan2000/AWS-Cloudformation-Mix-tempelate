@@ -137,22 +137,20 @@
                 "CidrIp": "0.0.0.0/0"
             }
         },
-        
-        "SGPing" : {
-            "Type" : "AWS::EC2::SecurityGroup",
-            "Properties" : {
-              "GroupDescription" : "SG to allow all ICMP",
-              "VpcId" : {"Ref" : "VPC"},
-              "SecurityGroupIngress" : [ 
-                { 
-                  "IpProtocol" : "icmp", 
-                  "FromPort" : "-1", 
-                  "ToPort" : "-1", 
-                  "CidrIp" : "10.0.0.0/24"
-                }
-              ]
-            }
-          }
+
+        "ingress1": {
+            "Type": "AWS::EC2::SecurityGroupIngress",
+            "Properties": {
+                "GroupId": {
+                    "Ref": "BastionHostSG"
+                },
+                "IpProtocol": "icmp",
+                "FromPort": "-1",
+                "ToPort" : "-1",
+                "CidrIp": "0.0.0.0/0"
        
     }
+}
+    }
+       
 }
