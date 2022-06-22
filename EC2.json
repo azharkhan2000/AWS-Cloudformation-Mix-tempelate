@@ -71,6 +71,12 @@
                 "SecurityGroupIds": [{"Ref":"BastionHostSG"}],
                 "InstanceType" : {"Ref":"BastionHostInstanceType"},
                 "SubnetId": { "Ref" : "PublicSubnet1" },
+                "Tags" : [ 
+                    {
+                        "Key" : "Name",
+                        "Value" : {"Ref" : "VPC"}
+                    } 
+                ],
                            
                 
                 "BlockDeviceMappings": [   
