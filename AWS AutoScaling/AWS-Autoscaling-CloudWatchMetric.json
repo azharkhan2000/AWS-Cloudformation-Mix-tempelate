@@ -1,0 +1,25 @@
+{
+  "AWSTemplateFormatVersion":"2010-09-09",
+  "Resources":{
+    "myPredictiveScalingPolicy":{
+      "Type":"AWS::AutoScaling::ScalingPolicy",
+      "Properties":{
+        "AutoScalingGroupName":{
+          "Ref":"myASG"
+        },
+        "PolicyType":"PredictiveScaling",
+        "PredictiveScalingConfiguration":{
+          "MetricSpecifications":[
+            {
+              "TargetValue":70,
+              "PredefinedMetricPairSpecification":{
+                "PredefinedMetricType":"ASGCPUUtilization"
+              }
+            }
+          ],
+          "Mode":"ForecastOnly"
+        }
+      }
+    }
+  }
+}

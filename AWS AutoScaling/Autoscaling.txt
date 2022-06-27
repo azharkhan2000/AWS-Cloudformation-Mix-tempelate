@@ -1,0 +1,24 @@
+To create Auto scaling Group:
+aws autoscaling create-auto-scaling-group --auto-scaling-group-name my-asg-from-instance \
+  --instance-id i-0e69cc3f05f825f4f --min-size 1 --max-size 2 --desired-capacity 2
+
+To verify either Autoscaling working or not:
+aws autoscaling describe-auto-scaling-groups --auto-scaling-group-name my-asg-from-instance
+
+To view Launch Configuration:
+aws autoscaling describe-launch-configurations --launch-configuration-names my-asg-from-instance
+
+To terminate the instance:
+aws ec2 terminate-instances --instance-ids i-0e69cc3f05f825f4f
+
+To terminate an Amazon EC2 instance:
+aws ec2 terminate-instances --instance-ids i-1234567890abcdef0
+
+To get information about a stack resource:
+aws cloudformation describe-stack-resources \--stack-name my-stack
+
+To set the health status of an instance:
+aws autoscaling set-instance-health \
+    --instance-id i-061c63c5eb45f0416 \
+    --health-status Unhealthy
+
