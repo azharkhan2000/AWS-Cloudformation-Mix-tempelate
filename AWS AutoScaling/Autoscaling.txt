@@ -1,6 +1,5 @@
 To create Auto scaling Group:
-aws autoscaling create-auto-scaling-group --auto-scaling-group-name my-asg-from-instance \
-  --instance-id i-0e69cc3f05f825f4f --min-size 1 --max-size 2 --desired-capacity 2
+aws autoscaling create-auto-scaling-group --auto-scaling-group-name my-asg-from-instance --instance-id i-0e69cc3f05f825f4f --min-size 1 --max-size 2 --desired-capacity 2
 
 To verify either Autoscaling working or not:
 aws autoscaling describe-auto-scaling-groups --auto-scaling-group-name my-asg-from-instance

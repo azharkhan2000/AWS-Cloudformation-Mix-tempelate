@@ -44,6 +44,21 @@
                 "DesiredCapacity": "1",
                 "VPCZoneIdentifier": { "Ref": "Subnets" }
             }
-        }
+        },
+        "MyLaunchTemplate":{
+            "Type":"AWS::EC2::LaunchTemplate",
+            "Properties":{
+              "LaunchTemplateName":"MyLaunchTemplate",
+              "LaunchTemplateData":{
+                "DisableApiTermination":"true",
+                "ImageId":"ami-05a935d7a367c0213",
+                "InstanceType":"t2.micro",
+                "KeyName":"Azhar-Jenkins",
+                "SecurityGroupIds":[
+                  "sg-04a8044e5a3989c54"
+                ]
+              }
+            }
           }
-    }
+        }
+      }

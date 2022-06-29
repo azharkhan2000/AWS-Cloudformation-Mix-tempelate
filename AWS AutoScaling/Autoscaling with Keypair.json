@@ -10,11 +10,11 @@
             "Description": "Amazon EC2 instance type for the instances",
             "Type": "String",
             "AllowedValues": [
-                "t2.micro",
-                "t2.small",
-                "t2.medium"
+                "t3.micro",
+                "t3.small",
+                "t3.medium"
             ],
-            "Default": "t2.micro"
+            "Default": "t3.micro"
         },
         "Subnets": {
             "Type": "List<AWS::EC2::Subnet::Id>",
@@ -22,13 +22,24 @@
         }
     },
     "Resources": {
+        "NewKeyPair": {
+            "Type": "AWS::EC2::KeyPair",
+            "Properties": {
+                "KeyName": "NailKeyPair"
+            }
+        },
+
+
         "myLaunchTemplate": {
             "Type": "AWS::EC2::LaunchTemplate",
             "Properties": {
                 "LaunchTemplateName": { "Fn::Sub": "${AWS::StackName}-launch-template" },
                 "LaunchTemplateData": {
                     "ImageId": { "Ref": "LatestAmiId" },
-                    "InstanceType": { "Ref": "InstanceType" }
+                    "InstanceType": { "Ref": "InstanceType" },
+                    "KeyName": {
+                    "Ref": "NewKeyPair"
+                }
                 }
             }
         },
