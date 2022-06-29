@@ -1,2 +1,5 @@
 To create stack :
 aws cloudformation deploy --template-file template.yaml --stack-name static-website
+
+To describe stack:
+aws cloudformation describe-stack-resources --stack-name my-stack
