@@ -10,7 +10,12 @@
     },
     "SubnetID": {
       "Type": "AWS::EC2::Subnet::Id"
-    }
+    },
+
+    "KeyName": {
+      "Type": "AWS::EC2::KeyPair::KeyName",
+      "Description": "Name of an existing EC2 KeyPair to enable SSH access to the EC2 instances"
+  }
   },
   "Resources": {
     "LaunchTemplate": {
@@ -20,6 +25,7 @@
         "LaunchTemplateData": {
           "InstanceType": "t2.micro",
           "ImageId": {"Ref": "UbuntuAMI"},
+          "KeyName" : {"Ref":"KeyName"},
           "IamInstanceProfile": {
             "Name": {"Ref": "InstanceProfile"}
           },
@@ -42,12 +48,6 @@
         "LaunchTemplate": {
           "LaunchTemplateId": {"Ref": "LaunchTemplate"},
           "Version": "1"
-        }
-      },
-      "CreationPolicy": {
-        "ResourceSignal": {
-          "Timeout": "PT5M",
-          "Count": "1"
         }
       },
       "Metadata": {
