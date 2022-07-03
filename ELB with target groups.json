@@ -1,0 +1,228 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "This template creates an Application Load Balancer",
+    "Metadata": {
+      "AWS::CloudFormation::Interface": {
+        "ParameterGroups": [
+          {
+            "Label": {
+              "default": "Certificate Arn"
+            },
+            "Parameters": [
+              "AcmCertificate"
+            ]
+          },
+          {
+            "Label": {
+              "default": "Export VPC Stack Name"
+            },
+            "Parameters": [
+              "ExportVpcStackName"
+            ]
+          },
+          {
+            "Label": {
+              "default": "EC2 Parameters"
+            },
+            "Parameters": [
+              "AmazonImageID",
+              "InstanceType",
+              "KeyName"
+            ]
+          }
+        ]
+      }
+    },
+    "Parameters": {
+      "AcmCertificate": {
+        "Description": "The ARN of the AWS Certification Manager's Certificate",
+        "Type": "String"
+      },
+      "VPC": {
+          "Type": "AWS::EC2::VPC::Id",
+          "Description": "Name of an existing VPC in your Region"
+      },
+      "PublicSubnet1": {
+          "Type": "AWS::EC2::Subnet::Id",
+          "Description": "Select 1st Public Subnet fom your existing VPC"
+      },
+      "PublicSubnet2": {
+          "Type": "AWS::EC2::Subnet::Id",
+          "Description": "Select 2nd Public Subnet fom your existing VPC"
+      },
+      "InstanceType": {
+        "Description": "WebServer EC2 instance type",
+        "Type": "String",
+        "Default": "t2.micro",
+        "AllowedValues": [
+          "t2.nano",
+          "t2.micro"
+        ],
+        "ConstraintDescription": "must be a valid EC2 instance type."
+      },
+      "KeyName": {
+        "Description": "Name of an existing EC2 KeyPair to enable SSH access to the instance",
+        "Type": "AWS::EC2::KeyPair::KeyName",
+        "ConstraintDescription": "must be the name of an existing EC2 KeyPair."
+      },
+      "AmazonImageID": {
+        "Description": "The ID of the Amazon machine image (AMI)",
+        "Type": "String"
+      }
+    },
+    "Resources": {
+      "ApplicationLoadBalancer": {
+        "Type": "AWS::ElasticLoadBalancingV2::LoadBalancer",
+        "Properties": {
+          "Name": "MyApplicationLoadBalancer",
+          "SecurityGroups": [{"Ref":"ALBSG"}],
+          "Subnets": [{"Ref" : "PublicSubnet1"},
+              {"Ref" : "PublicSubnet2"}]
+        }
+      },
+  
+      "ALBSG": {
+          "Type": "AWS::EC2::SecurityGroup",
+          "Properties": {
+              "VpcId": {
+                  "Ref": "VPC"
+              },
+              "GroupDescription": "SG For ALB"
+          }
+      },
+  
+      "Port80": {
+          "Type": "AWS::EC2::SecurityGroupIngress",
+          "Properties": {
+              "GroupId": {
+                  "Ref": "ALBSG"
+              },
+              "IpProtocol": "tcp",
+              "FromPort": "80",
+              "ToPort": "80",
+              "CidrIp": "0.0.0.0/0"
+          }
+      },
+  
+      "Port443": {
+          "Type": "AWS::EC2::SecurityGroupIngress",
+          "Properties": {
+              "GroupId": {
+                  "Ref": "ALBSG"
+              },
+              "IpProtocol": "tcp",
+              "FromPort": "443",
+              "ToPort": "443",
+              "CidrIp": "0.0.0.0/0"
+          }
+      },
+  
+      "ALBListenerNoSslCertificate": {
+        "Type": "AWS::ElasticLoadBalancingV2::Listener",
+        "Properties": {
+          "DefaultActions": [
+            {
+              "RedirectConfig": {
+                "Host": "#{host}",
+                "Path": "/#{path}",
+                "Port": "443",
+                "Protocol": "HTTPS",
+                "StatusCode": "HTTP_301"
+              },
+              "Type": "redirect"
+            }
+          ],
+          "LoadBalancerArn": {
+            "Ref": "ApplicationLoadBalancer"
+        },
+          
+          "Port": 80,
+          "Protocol": "HTTP"
+        }
+      },
+      "ALBListenerSslCertificate": {
+        "Type": "AWS::ElasticLoadBalancingV2::Listener",
+        "Properties": {
+          "Certificates": [
+            {
+              "CertificateArn": {"Ref":"AcmCertificate"}
+            }
+          ],
+          "DefaultActions": [
+            {
+              "Type": "forward",
+              "TargetGroupArn": {"Ref":"ALBTargetGroup"}
+            }
+          ],
+          "LoadBalancerArn": {
+            "Ref": "ApplicationLoadBalancer"
+        },
+          
+          "Port": 443,
+          "Protocol": "HTTPS"
+        }
+      },
+      "ALBTargetGroup": {
+        "Type": "AWS::ElasticLoadBalancingV2::TargetGroup",
+        "Properties": {
+          "HealthCheckIntervalSeconds": 10,
+          "HealthCheckPath": "/",
+          "HealthCheckTimeoutSeconds": 5,
+          "HealthyThresholdCount": 2,
+          "Name": "MyWebServers",
+          "Port": 80,
+          "Protocol": "HTTP",
+          "Targets": [
+            {
+              
+              "Id":{"Ref": "EC2Instance1"},
+              "Port": 80
+            },
+            {
+              
+              "Id":{"Ref": "EC2Instance2"},
+              "Port": 80
+            }
+          ],
+          "TargetType": "instance",
+          "UnhealthyThresholdCount": 5,
+          "VpcId": {
+              "Ref": "VPC"
+          }
+        }
+      },
+      "EC2Instance1": {
+        "Type": "AWS::EC2::Instance",
+        "Properties": {
+            "ImageId" : {"Ref":"AmazonImageID"},
+            "KeyName" : {"Ref":"KeyName"},
+            "SecurityGroupIds": [{"Ref":"ALBSG"}],
+            "InstanceType" : {"Ref":"InstanceType"},
+            "SubnetId": { "Ref" : "PublicSubnet1" },
+            "Tags" : [ 
+                {
+                    "Key" : "Name",
+                    "Value" : {"Ref" : "VPC"}
+                } 
+            ]                              
+        }
+      },    
+    "EC2Instance2": {
+      "Type": "AWS::EC2::Instance",
+      "Properties": {
+          "ImageId" : {"Ref":"AmazonImageID"},
+          "KeyName" : {"Ref":"KeyName"},
+          "SecurityGroupIds": [{"Ref":"ALBSG"}],
+          "InstanceType" : {"Ref":"InstanceType"},
+          "SubnetId": { "Ref" : "PublicSubnet2" },
+          "Tags" : [ 
+              {
+                  "Key" : "Name",
+                  "Value" : {"Ref" : "VPC"}
+              } 
+          ]                              
+      }
+     }
+    }  
+}
+    
