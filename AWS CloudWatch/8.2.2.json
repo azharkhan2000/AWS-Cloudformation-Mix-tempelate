@@ -1,0 +1,136 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "This template creates an EC2 resource for 8.2.2",
+    "Metadata": {
+      "AWS::CloudFormation::Interface": {
+        "ParameterGroups": [
+          {
+            "Label": {
+              "default": "Export VPC Stack Name"
+            },
+            "Parameters": [
+              "ExportVpcStackName"
+            ]
+          },
+          {
+            "Label": {
+              "default": "EC2 Parameters"
+            },
+            "Parameters": [
+              "AmazonImageID",
+              "InstanceType",
+              "KeyName"
+            ]
+          }
+        ]
+      }
+    },
+    "Parameters": {
+     
+      "VPC": {
+          "Type": "AWS::EC2::VPC::Id",
+          "Description": "Name of an existing VPC in your Region"
+      },
+      "PublicSubnet1": {
+          "Type": "AWS::EC2::Subnet::Id",
+          "Description": "Select 1st Public Subnet fom your existing VPC"
+      },
+      
+      "InstanceType": {
+        "Description": "WebServer EC2 instance type",
+        "Type": "String",
+        "Default": "t2.micro",
+        "AllowedValues": [
+          "t2.nano",
+          "t2.micro"
+        ],
+        "ConstraintDescription": "must be a valid EC2 instance type."
+      },
+      "KeyName": {
+        "Description": "Name of an existing EC2 KeyPair to enable SSH access to the instance",
+        "Type": "AWS::EC2::KeyPair::KeyName",
+        "ConstraintDescription": "must be the name of an existing EC2 KeyPair."
+      },
+      "AmazonImageID": {
+        "Description": "The ID of the Amazon machine image (AMI)",
+        "Type": "String"
+      },
+
+      "username": {
+        "Description": "Please enter your AWS Username",
+        "Type": "String"
+      }
+    },
+
+
+    "Resources": {
+
+
+        "ALBSG": {
+            "Type": "AWS::EC2::SecurityGroup",
+            "Properties": {
+                "VpcId": {
+                    "Ref": "VPC"
+                },
+                "GroupDescription": "SG For ALB"
+            }
+        },
+    
+        "Port80": {
+            "Type": "AWS::EC2::SecurityGroupIngress",
+            "Properties": {
+                "GroupId": {
+                    "Ref": "ALBSG"
+                },
+                "IpProtocol": "tcp",
+                "FromPort": "80",
+                "ToPort": "80",
+                "CidrIp": "0.0.0.0/0"
+            }
+        },
+    
+        "Port443": {
+            "Type": "AWS::EC2::SecurityGroupIngress",
+            "Properties": {
+                "GroupId": {
+                    "Ref": "ALBSG"
+                },
+                "IpProtocol": "tcp",
+                "FromPort": "443",
+                "ToPort": "443",
+                "CidrIp": "0.0.0.0/0"
+            }
+        },
+
+ "EC2Instance1": {
+        "Type": "AWS::EC2::Instance",
+        "Properties": {
+            "ImageId" : {"Ref":"AmazonImageID"},
+            "KeyName" : {"Ref":"KeyName"},
+            "SecurityGroupIds": [{"Ref":"ALBSG"}],
+            "InstanceType" : {"Ref":"InstanceType"},
+            "SubnetId": { "Ref" : "PublicSubnet1" },
+            "Tags" : [ 
+                {
+                    "Key" : "AWSUserName",
+                    "Value" : {"Ref" : "username"}
+                }, 
+                {
+                    "Key" : "stelligent-u",
+                    "Value" : "Lab 8.2.2: Logging AWS infrastructure changes"
+                } 
+            ]                              
+        }
+
+
+        
+
+
+
+
+
+      }  
+
+    }
+
+}

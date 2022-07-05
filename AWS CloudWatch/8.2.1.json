@@ -1,0 +1,146 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Parameters": {
+      
+     
+
+      "LOGGROUPNAME": {
+        "Description": "Name of the Log Group",
+        "Type": "String"
+      },
+
+      "TRAILNAME": {
+        "Description": "Name of the Trail",
+        "Type": "String"
+      },
+
+      "BUCKETNAME": {
+        "Description": "Name of the Log Bucket",
+        "Type": "String"
+    }
+
+},
+
+
+
+    "Resources":
+{
+
+    "RoleCloudWatch": {
+        "Type": "AWS::IAM::Role",
+        "Properties": {
+          "ManagedPolicyArns": [
+            "arn:aws:iam::aws:policy/CloudWatchFullAccess"
+            
+          ],
+          "AssumeRolePolicyDocument": {
+            "Version": "2012-10-17",
+            "Statement": [
+              {
+                "Effect": "Allow",
+                "Principal": {
+                  "Service": [
+                    "cloudtrail.amazonaws.com"
+                  ]
+                },
+                "Action": [
+                  "sts:AssumeRole"
+                ]
+              }
+            ]
+          }
+        }
+      },
+
+  "LogGroup": {
+  "Type" : "AWS::Logs::LogGroup",
+  "Properties" : {
+      "LogGroupName" : {"Ref":"LOGGROUPNAME"},
+      "RetentionInDays" : "60"
+    }
+},
+
+  "CloudTrail": {
+  "Type" : "AWS::CloudTrail::Trail",
+  "Properties" : {
+    "CloudWatchLogsLogGroupArn": {
+        "Fn::GetAtt": [
+            "LogGroup",
+            "Arn"
+        ]
+    },
+    "CloudWatchLogsRoleArn": {
+        "Fn::GetAtt": [
+            "RoleCloudWatch",
+            "Arn"
+        ]
+    },
+
+      "IsLogging" : "true",
+      "S3BucketName" : {"Ref":"TrailBucket"},
+      "TrailName" : {"Ref":"TRAILNAME"}
+    }
+},
+
+
+
+    "TrailBucket": {
+        
+        "Type": "AWS::S3::Bucket",
+        "Properties": {
+            "PublicAccessBlockConfiguration": {
+                "BlockPublicAcls": true,
+                "BlockPublicPolicy": true,
+                "IgnorePublicAcls": true,
+                "RestrictPublicBuckets": true
+            }
+        }
+    },
+    "TrailBucketPolicy": {
+        
+        "Type": "AWS::S3::BucketPolicy",
+        "Properties": {
+            "Bucket": {
+                "Ref": "TrailBucket"
+            },
+            "PolicyDocument": {
+                "Version": "2012-10-17",
+                "Statement": [
+                    {
+                        "Sid": "AWSCloudTrailAclCheck",
+                        "Effect": "Allow",
+                        "Principal": {
+                            "Service": "cloudtrail.amazonaws.com"
+                        },
+                        "Action": "s3:GetBucketAcl",
+                        "Resource": {
+                            "Fn::Sub": "arn:aws:s3:::${TrailBucket}"
+                        }
+                    },
+                    {
+                        "Sid": "AWSCloudTrailWrite",
+                        "Effect": "Allow",
+                        "Principal": {
+                            "Service": "cloudtrail.amazonaws.com"
+                        },
+                        "Action": "s3:PutObject",
+                        "Resource": {
+                            
+                                "Fn::Sub": "arn:aws:s3:::${TrailBucket}/${LogFilePrefix}/AWSLogs/${AWS::AccountId}/*",
+                            
+                            
+                                "Fn::Sub": "arn:aws:s3:::${TrailBucket}/AWSLogs/${AWS::AccountId}/*"
+                            
+                        }
+                            
+                    }
+                    
+                    
+                    
+                             ]
+            }
+        }
+    }
+
+} 
+}
