@@ -1,0 +1,137 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "Security: KMS customer managed CMK for AWS services",
+    "Metadata": {
+        "AWS::CloudFormation::Interface": {
+            "ParameterGroups": [
+                {
+                    "Label": {
+                        "default": "KMS Parameters"
+                    },
+                    "Parameters": [
+                        "Service",
+                        "KeySpec",
+                        "KeyUsage"
+                    ]
+                }
+            ]
+        }
+    },
+    "Parameters": {
+         
+        "KeySpec": {
+            "Description": "Specify the type of the CMK.",
+            "Type": "String",
+            "AllowedValues": [
+                "SYMMETRIC_DEFAULT",
+                "RSA_2048",
+                "RSA_3072",
+                "RSA_4096",
+                "ECC_NIST_P256",
+                "ECC_NIST_P384",
+                "ECC_NIST_P521",
+                "ECC_SECG_P256K1"
+            ],
+            "Default": "SYMMETRIC_DEFAULT"
+        },
+        "KeyUsage": {
+            "Description": "Which cryptographic operations should the CMK support?",
+            "Type": "String",
+            "AllowedValues": [
+                "ENCRYPT_DECRYPT",
+                "SIGN_VERIFY"
+            ],
+            "Default": "ENCRYPT_DECRYPT"
+        }
+    },
+    "Conditions": {
+        
+        "HasSymmetricKey": {
+            "Fn::Equals": [
+                {
+                    "Ref": "KeySpec"
+                },
+                "SYMMETRIC_DEFAULT"
+            ]
+        }
+    },
+    "Resources": {
+        "Key": {
+            "DeletionPolicy": "Retain",
+            "UpdateReplacePolicy": "Retain",
+            "Type": "AWS::KMS::Key",
+            "Properties": {
+                "EnableKeyRotation": {
+                    "Fn::If": [
+                        "HasSymmetricKey",
+                        true,
+                        false
+                    ]
+                },
+                "KeySpec": {
+                    "Ref": "KeySpec"
+                },
+                "KeyUsage": {
+                    "Ref": "KeyUsage"
+                },
+                "KeyPolicy": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                        {
+                            "Effect": "Allow",
+                            "Principal": {
+                                "AWS": {
+                                    "Fn::Sub": "arn:aws:iam::${AWS::AccountId}:root"
+                                }
+                            },
+                            "Action": "kms:*",
+                            "Resource": "*"
+                        },
+                        
+                        {    
+                                    "Effect": "Allow",
+                                    "Principal": {
+                                        "AWS": "*"
+                                    },
+                                    "Action": [
+                                        "kms:Encrypt",
+                                        "kms:Decrypt",
+                                        "kms:ReEncrypt*",
+                                        "kms:GenerateDataKey*",
+                                        "kms:CreateGrant",
+                                        "kms:ListGrants",
+                                        "kms:DescribeKey"
+                                    ],
+                                    "Resource": "*",
+                                    "Condition": {
+                                        "StringEquals": {
+                                            "kms:CallerAccount": {
+                                                "Ref": "AWS::AccountId"
+                                            }
+                                        }
+                                    }
+                                },
+                                {
+                                    "Ref": "AWS::NoValue"
+                                }               
+                    ]
+                }
+            }
+        },
+        "KeyAlias": {
+            "DeletionPolicy": "Retain",
+            "UpdateReplacePolicy": "Retain",
+            "Type": "AWS::KMS::Alias",
+            "Properties": {
+                "AliasName": {
+                    "Fn::Sub": "alias/${AWS::StackName}"
+                },
+                "TargetKeyId": {
+                    "Ref": "Key"
+                }
+            }
+        }
+       
+    
+    }
+}
