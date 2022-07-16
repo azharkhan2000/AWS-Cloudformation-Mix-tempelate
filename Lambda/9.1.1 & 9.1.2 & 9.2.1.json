@@ -192,8 +192,7 @@
         "LambdaFunction": {
             "Type": "AWS::Lambda::Function",
             "Properties": {
-                "Code": {
-                    "ZipFile": 
+                "Code": { 
                     "ZipFile": "def handler(event, context):\n  response = {\n    'isBase64Encoded': False,\n    'statusCode': 200,\n    'headers': {},\n    'multiValueHeaders': {},\n    'body': 'Hello AWS!'\n  }\n  return response\n"
                 },
                 "Description": "AWS Lambda function",
