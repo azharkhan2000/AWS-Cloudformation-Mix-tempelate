@@ -1,0 +1,15 @@
+https://docs.aws.amazon.com/kms/latest/developerguide/services-parameter-store.html
+
+11.1.4:
+
+To search for your Parameter data that you have stored in AWS Parameter Store.
+"aws ssm describe-parameters"
+
+To create Parameter Secure List with KMS:
+aws ssm put-parameter --name test1 --value "test21" --type SecureString --key-id 3609e542-9455-49ab-ab75-83c9ce9b591c
+
+To verify your Encypted Parameter Store:
+aws ssm get-parameter --name test1 
+
+To Decrypt it:
+aws ssm get-parameter --name test1 --with-decryption

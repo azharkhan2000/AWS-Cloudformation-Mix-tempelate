@@ -1,0 +1,17 @@
+{
+    "Resources": {
+        "BasicParameter": {
+            "Type": "AWS::SSM::Parameter",
+            "Properties": {
+                "Name": "Engineer",
+                "Type": "StringList",
+                "Value": "Neil,Timezone",
+                "Description": "SSM Parameter of type StringList.",
+                "AllowedPattern": "^[a-zA-Z]{1,10}$",
+                "Tags": {
+                    "Environment": "Engineer"
+                }
+            }
+        }
+    }
+}
